@@ -21,11 +21,10 @@ def processRequests():
     frontend.bind("tcp://*:6767")
     
     backend = ctx.socket(zmq.DEALER)
-    backend.bind("inproc://imgwork")
+    backend.bind("tcp://*:6768")
     
     workerCnt = 0
     # Notice these workers connect before hand
-    startWorkers(ctx, workerCnt)
     
     poller = zmq.Poller()
     poller.register(frontend, zmq.POLLIN)
@@ -38,7 +37,7 @@ def processRequests():
         socks = dict(poller.poll(timeout = 1000))
         
         if frontend in socks:
-            allParts = recvAll(frontend)        
+            allParts = recvAll(frontend)      
             # Send something to a worker
             sendAll(backend, allParts)
         elif backend in socks:
